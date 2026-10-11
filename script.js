@@ -1,90 +1,339 @@
-let chartData = {
-    labels: [],
-    datasets: [{
-        label: '# of Values',
-        data: [],
-        backgroundColor: [
-            'rgba(255, 99, 132, 0.5)',
-            'rgba(54, 162, 235, 0.5)',
-            'rgba(255, 206, 86, 0.5)',
-            'rgba(75, 192, 192, 0.5)',
-            'rgba(153, 102, 255, 0.5)',
-            'rgba(255, 159, 64, 0.5)'
-        ],
-        borderColor: [
-            'rgba(255, 99, 132, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)'
-        ],
-        borderWidth: 1
-    }]
+const DEFAULT_COLORS = [
+    '#ff6384',
+    '#36a2eb',
+    '#ffce56',
+    '#4bc0c0',
+    '#9966ff',
+    '#ff9f40'
+];
+
+// Each entry: { label, value, color }
+let entries = [];
+
+const settings = {
+    type: 'bar',
+    title: '',
+    unit: '',
+    xAxis: '',
+    yAxis: ''
 };
 
-function createChart(type, height = 400) {
-    const canvasContainer = document.getElementById('canvas-container');
-    canvasContainer.innerHTML = `<canvas id="myChart"></canvas>`;
-    canvasContainer.style.height = `${height}px`;
+let myChart = null;
 
-    const ctx = document.getElementById('myChart').getContext('2d');
-    return new Chart(ctx, {
-        type: type,
-        data: chartData,
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
+const hasAxes = () => settings.type === 'bar' || settings.type === 'line';
+
+function withUnit(value) {
+    return settings.unit ? `${value} ${settings.unit}` : `${value}`;
+}
+
+function hexToRgba(hex, alpha) {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+
+function nextDefaultColor() {
+    return DEFAULT_COLORS[entries.length % DEFAULT_COLORS.length];
+}
+
+function buildDataset() {
+    const colors = entries.map((e) => e.color);
+    const lineLike = settings.type === 'line' || settings.type === 'radar';
+    const lineColor = colors[0] || DEFAULT_COLORS[1];
+
+    return {
+        label: settings.yAxis || settings.title || 'Value',
+        data: entries.map((e) => e.value),
+        backgroundColor: lineLike ? hexToRgba(lineColor, 0.2) : colors,
+        borderColor: lineLike ? lineColor : colors,
+        pointBackgroundColor: colors,
+        borderWidth: lineLike ? 2 : 1,
+        fill: settings.type === 'radar'
+    };
+}
+
+function buildOptions() {
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            title: {
+                display: Boolean(settings.title),
+                text: settings.title,
+                font: { size: 20, weight: '600' }
+            },
+            legend: {
+                display: settings.type === 'pie' || settings.type === 'doughnut'
+            },
+            tooltip: {
+                callbacks: {
+                    label: (ctx) => {
+                        const value = ctx.parsed && typeof ctx.parsed === 'object' ? (ctx.parsed.y ?? ctx.parsed.r) : ctx.parsed;
+                        return withUnit(value);
+                    }
                 }
-            },
-            onClick: (event, activeElements) => {
-                if (activeElements.length > 0) {
-                    const { datasetIndex, index } = activeElements[0];
-                    removeData(datasetIndex, index);
-                }
-            },
-            tooltips: {
-                mode: 'index',
-                intersect: false
-            },
-            hover: {
-                mode: 'index',
-                intersect: false
+            }
+        },
+        interaction: interactionFor(settings.type),
+        onClick: (event, activeElements) => {
+            if (activeElements.length > 0) {
+                removeData(activeElements[0].index);
             }
         }
-    });
+    };
 
+    if (hasAxes()) {
+        options.scales = {
+            x: {
+                title: { display: Boolean(settings.xAxis), text: settings.xAxis, font: { size: 14 } }
+            },
+            y: {
+                beginAtZero: true,
+                title: { display: Boolean(settings.yAxis), text: settings.yAxis, font: { size: 14 } },
+                ticks: { callback: (value) => withUnit(value) }
+            }
+        };
+    } else if (settings.type === 'radar') {
+        options.scales = {
+            r: {
+                beginAtZero: true,
+                ticks: { callback: (value) => withUnit(value) }
+            }
+        };
+    }
+
+    return options;
 }
 
-let myChart = createChart('bar'); // Create initial chart with default height = 400
+// Pie and doughnut need a click on a slice, not the nearest index.
+function interactionFor(type) {
+    return type === 'pie' || type === 'doughnut' ? { mode: 'nearest', intersect: true } : { mode: 'index', intersect: false };
+}
 
-function addData() {
+function createChart() {
+    const ctx = document.getElementById('myChart').getContext('2d');
+    return new Chart(ctx, {
+        type: settings.type,
+        data: {
+            labels: entries.map((e) => e.label),
+            datasets: [buildDataset()]
+        },
+        options: buildOptions()
+    });
+}
+
+function renderChart() {
+    if (myChart) {
+        myChart.destroy();
+    }
+    myChart = createChart();
+}
+
+function render() {
+    renderChart();
+    renderDataList();
+    document.querySelectorAll('.axis-field').forEach((el) => {
+        el.classList.toggle('is-hidden', !hasAxes());
+    });
+}
+
+function renderDataList() {
+    const list = document.getElementById('dataList');
+    list.innerHTML = '';
+    document.getElementById('emptyHint').style.display = entries.length ? 'none' : 'block';
+
+    entries.forEach((entry, index) => {
+        const li = document.createElement('li');
+
+        const label = document.createElement('input');
+        label.type = 'text';
+        label.className = 'input';
+        label.value = entry.label;
+        label.addEventListener('change', () => {
+            entry.label = label.value;
+            renderChart();
+        });
+
+        const value = document.createElement('input');
+        value.type = 'number';
+        value.step = 'any';
+        value.className = 'input value';
+        value.value = entry.value;
+        value.addEventListener('change', () => {
+            const parsed = parseFloat(value.value);
+            if (!Number.isNaN(parsed)) {
+                entry.value = parsed;
+                renderChart();
+            }
+        });
+
+        const color = document.createElement('input');
+        color.type = 'color';
+        color.className = 'color';
+        color.title = 'Color';
+        color.value = entry.color;
+        color.addEventListener('input', () => {
+            entry.color = color.value;
+            renderChart();
+        });
+
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'remove';
+        remove.title = 'Remove';
+        remove.textContent = '×';
+        remove.addEventListener('click', () => removeData(index));
+
+        li.append(label, value, color, remove);
+        list.appendChild(li);
+    });
+}
+
+function addData(event) {
+    event.preventDefault();
     const labelInput = document.getElementById('labelInput');
     const dataInput = document.getElementById('dataInput');
+    const colorInput = document.getElementById('colorInput');
+    const value = parseFloat(dataInput.value);
 
-    if (labelInput.value && dataInput.value) {
-        chartData.labels.push(labelInput.value);
-        chartData.datasets.forEach((dataset) => {
-            dataset.data.push(dataInput.value);
-        });
-        myChart.update();
+    if (labelInput.value && !Number.isNaN(value)) {
+        entries.push({ label: labelInput.value, value: value, color: colorInput.value });
         labelInput.value = '';
         dataInput.value = '';
-    }
-
-}
-
-function updateChartType() {
-    const selectedType = document.getElementById('chartType').value;
-    myChart.destroy(); // Destroy the old chart
-    myChart = createChart(selectedType);
-}
-
-function removeData(datasetIndex, index) {
-    if (chartData.labels.length > index) {
-        chartData.labels.splice(index, 1);
-        chartData.datasets[datasetIndex].data.splice(index, 1);
-        myChart.update();
+        colorInput.value = nextDefaultColor();
+        render();
+        labelInput.focus();
     }
 }
+
+function removeData(index) {
+    if (index < entries.length) {
+        entries.splice(index, 1);
+        render();
+    }
+}
+
+function fileName(extension) {
+    const base = (settings.title || 'chart').trim().replace(/[^\w\-äöüÄÖÜß ]+/g, '').replace(/\s+/g, '_') || 'chart';
+    return `${base}.${extension}`;
+}
+
+// PowerPoint number format that appends the unit, e.g. General" kg"
+function pptxFormatCode() {
+    if (!settings.unit) {
+        return 'General';
+    }
+    return `General" ${settings.unit.replace(/"/g, '')}"`;
+}
+
+function downloadPptx() {
+    if (!entries.length) {
+        alert('Add some data first.');
+        return;
+    }
+
+    const pptx = new PptxGenJS();
+    pptx.layout = 'LAYOUT_WIDE';
+    const slide = pptx.addSlide();
+
+    const typeMap = {
+        bar: pptx.ChartType.bar,
+        line: pptx.ChartType.line,
+        pie: pptx.ChartType.pie,
+        doughnut: pptx.ChartType.doughnut,
+        radar: pptx.ChartType.radar
+    };
+
+    const data = [{
+        name: settings.yAxis || settings.title || 'Value',
+        labels: entries.map((e) => e.label),
+        values: entries.map((e) => e.value)
+    }];
+
+    const colors = entries.map((e) => e.color.replace('#', ''));
+    const isPie = settings.type === 'pie' || settings.type === 'doughnut';
+
+    const options = {
+        x: 0.5,
+        y: 0.4,
+        w: 12.33,
+        h: 6.7,
+        chartColors: settings.type === 'line' || settings.type === 'radar' ? [colors[0]] : colors,
+        showTitle: Boolean(settings.title),
+        title: settings.title,
+        titleFontSize: 20,
+        showLegend: isPie,
+        legendPos: 'r',
+        valAxisLabelFormatCode: pptxFormatCode(),
+        dataLabelFormatCode: pptxFormatCode()
+    };
+
+    if (settings.type === 'bar' || settings.type === 'line') {
+        options.barDir = 'col';
+        options.valAxisMinVal = Math.min(0, ...entries.map((e) => e.value));
+        options.showCatAxisTitle = Boolean(settings.xAxis);
+        options.catAxisTitle = settings.xAxis;
+        options.showValAxisTitle = Boolean(settings.yAxis);
+        options.valAxisTitle = settings.yAxis;
+    }
+
+    if (isPie) {
+        options.showPercent = false;
+        options.showValue = true;
+    }
+
+    if (settings.type === 'radar') {
+        options.radarStyle = 'filled';
+    }
+
+    slide.addChart(typeMap[settings.type], data, options);
+    pptx.writeFile({ fileName: fileName('pptx') });
+}
+
+function downloadPng() {
+    // Re-render at 3x pixel density so the image stays sharp when enlarged on a slide.
+    const originalRatio = myChart.options.devicePixelRatio;
+    myChart.options.devicePixelRatio = 3;
+    myChart.resize();
+    myChart.update('none');
+
+    const canvas = document.createElement('canvas');
+    canvas.width = myChart.canvas.width;
+    canvas.height = myChart.canvas.height;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(myChart.canvas, 0, 0);
+
+    myChart.options.devicePixelRatio = originalRatio;
+    myChart.resize();
+    myChart.update('none');
+
+    const link = document.createElement('a');
+    link.download = fileName('png');
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+}
+
+function bindSetting(id, key) {
+    document.getElementById(id).addEventListener('input', (event) => {
+        settings[key] = event.target.value;
+        renderChart();
+    });
+}
+
+bindSetting('titleInput', 'title');
+bindSetting('unitInput', 'unit');
+bindSetting('xAxisInput', 'xAxis');
+bindSetting('yAxisInput', 'yAxis');
+
+document.getElementById('chartType').addEventListener('change', (event) => {
+    settings.type = event.target.value;
+    render();
+});
+
+document.getElementById('addForm').addEventListener('submit', addData);
+document.getElementById('pptxBtn').addEventListener('click', downloadPptx);
+document.getElementById('pngBtn').addEventListener('click', downloadPng);
+document.getElementById('colorInput').value = nextDefaultColor();
+
+render();
