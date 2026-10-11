@@ -10,31 +10,56 @@
 
 html,
 body{
-    height: 100%;
+    color: #1d1d1f;
+    background-color: #c9d6ff;
 }
 
-body{
-    background-color: #f4f4f4;
-    color: #333;
+/* Colorful backdrop on its own fixed layer, so it stays put while the page scrolls (also on phones). */
+body::before{
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image:
+        radial-gradient(at 12% 18%, #ff9ac1 0, transparent 45%),
+        radial-gradient(at 88% 12%, #7ad7f0 0, transparent 45%),
+        radial-gradient(at 78% 88%, #b69cff 0, transparent 50%),
+        radial-gradient(at 18% 92%, #ffd27a 0, transparent 45%),
+        linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+}
+
+/* Liquid Glass: translucent, blurred surfaces with a bright rim and soft depth. */
+.glass{
+    background: rgba(255, 255, 255, 0.28);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.2),
+        0 20px 50px rgba(40, 30, 90, 0.18);
 }
 
 .app{
+    position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: 340px 1fr;
+    gap: 20px;
     height: 100vh;
+    padding: 20px;
 }
 
 .sidebar{
-    background-color: #fff;
     padding: 24px;
     overflow-y: auto;
-    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.06);
-    z-index: 1;
+    border-radius: 28px;
 }
 
 .app-title{
-    font-size: 22px;
-    font-weight: 600;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
     margin-bottom: 20px;
 }
 
@@ -43,11 +68,11 @@ body{
 }
 
 .panel h2{
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #777;
+    letter-spacing: 0.06em;
+    color: rgba(29, 29, 31, 0.6);
     margin-bottom: 10px;
 }
 
@@ -59,6 +84,7 @@ body{
 .field span{
     display: block;
     font-size: 13px;
+    font-weight: 500;
     margin-bottom: 4px;
 }
 
@@ -69,26 +95,65 @@ body{
 .select,
 .input{
     width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 9px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.45);
+    color: inherit;
     font-size: 14px;
+    box-shadow: inset 0 1px 2px rgba(40, 30, 90, 0.08);
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input::placeholder{
+    color: rgba(29, 29, 31, 0.45);
+}
+
+.select{
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 34px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    cursor: pointer;
+}
+
+.select:hover,
+.input:hover{
+    background-color: rgba(255, 255, 255, 0.6);
 }
 
 .select:focus,
 .input:focus{
-    border-color: #303f9f;
+    background-color: rgba(255, 255, 255, 0.75);
+    border-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.25);
 }
 
 .color{
     width: 38px;
     height: 38px;
-    padding: 2px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background: #fff;
+    padding: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.45);
     cursor: pointer;
     flex-shrink: 0;
+}
+
+.color::-webkit-color-swatch-wrapper{
+    padding: 0;
+}
+
+.color::-webkit-color-swatch{
+    border: none;
+    border-radius: 8px;
+}
+
+.color::-moz-color-swatch{
+    border: none;
+    border-radius: 8px;
 }
 
 .add-row{
@@ -101,18 +166,29 @@ body{
 }
 
 .btn{
-    padding: 8px 15px;
-    border: none;
-    background-color: #303f9f;
+    padding: 9px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(64, 156, 255, 0.95), rgba(0, 110, 240, 0.9));
     color: #fff;
-    border-radius: 4px;
-    cursor: pointer;
     font-size: 14px;
-    transition: all 0.3s ease;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        0 6px 16px rgba(0, 110, 240, 0.3);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .btn:hover{
-    background-color: #0056b3;
+    filter: brightness(1.08);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        0 8px 22px rgba(0, 110, 240, 0.4);
+}
+
+.btn:active{
+    transform: scale(0.97);
 }
 
 .btn-wide{
@@ -122,13 +198,19 @@ body{
 }
 
 .btn-secondary{
-    background-color: #fff;
-    color: #303f9f;
-    border: 1px solid #303f9f;
+    background: rgba(255, 255, 255, 0.45);
+    color: #0066d6;
+    border-color: rgba(255, 255, 255, 0.7);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 4px 12px rgba(40, 30, 90, 0.1);
 }
 
 .btn-secondary:hover{
-    background-color: #eef0fb;
+    background: rgba(255, 255, 255, 0.65);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 6px 16px rgba(40, 30, 90, 0.14);
 }
 
 .data-list{
@@ -152,26 +234,30 @@ body{
 }
 
 .remove{
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
     border: none;
-    background: none;
-    color: #999;
-    font-size: 20px;
+    border-radius: 50%;
+    background: transparent;
+    color: rgba(29, 29, 31, 0.5);
+    font-size: 18px;
     line-height: 1;
     cursor: pointer;
-    padding: 0 4px;
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
 .remove:hover{
-    color: #d32f2f;
+    background: rgba(255, 59, 48, 0.15);
+    color: #ff3b30;
 }
 
 .hint{
     font-size: 13px;
-    color: #999;
+    color: rgba(29, 29, 31, 0.55);
 }
 
 .chart-area{
-    padding: 32px;
     min-width: 0;
     min-height: 0;
 }
@@ -180,24 +266,22 @@ body{
     position: relative;
     width: 100%;
     height: 100%;
-    background-color: #fff;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 28px;
     padding: 24px;
+    /* A little more opaque than the sidebar so the chart stays easy to read. */
+    background: rgba(255, 255, 255, 0.5);
 }
 
 @media (max-width: 800px){
     .app{
         grid-template-columns: 1fr;
         grid-template-rows: auto 70vh;
+        gap: 16px;
         height: auto;
+        padding: 16px;
     }
 
     .sidebar{
         overflow: visible;
-    }
-
-    .chart-area{
-        padding: 16px;
     }
 }
