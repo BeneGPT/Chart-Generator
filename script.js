@@ -20,6 +20,10 @@ const settings = {
 
 let myChart = null;
 
+const FONT = 'Inter';
+Chart.defaults.font.family = `'${FONT}', sans-serif`;
+Chart.defaults.color = '#333';
+
 const hasAxes = () => settings.type === 'bar' || settings.type === 'line';
 
 function withUnit(value) {
@@ -201,6 +205,8 @@ function addData(event) {
         dataInput.value = '';
         colorInput.value = nextDefaultColor();
         render();
+// The web font may arrive after the first draw; redraw so the chart picks it up.
+document.fonts.ready.then(renderChart);
         labelInput.focus();
     }
 }
@@ -209,6 +215,8 @@ function removeData(index) {
     if (index < entries.length) {
         entries.splice(index, 1);
         render();
+// The web font may arrive after the first draw; redraw so the chart picks it up.
+document.fonts.ready.then(renderChart);
     }
 }
 
@@ -263,6 +271,13 @@ function downloadPptx() {
         titleFontSize: 20,
         showLegend: isPie,
         legendPos: 'r',
+        titleFontFace: FONT,
+        legendFontFace: FONT,
+        catAxisLabelFontFace: FONT,
+        valAxisLabelFontFace: FONT,
+        catAxisTitleFontFace: FONT,
+        valAxisTitleFontFace: FONT,
+        dataLabelFontFace: FONT,
         valAxisLabelFormatCode: pptxFormatCode(),
         dataLabelFormatCode: pptxFormatCode()
     };
@@ -329,6 +344,8 @@ bindSetting('yAxisInput', 'yAxis');
 document.getElementById('chartType').addEventListener('change', (event) => {
     settings.type = event.target.value;
     render();
+// The web font may arrive after the first draw; redraw so the chart picks it up.
+document.fonts.ready.then(renderChart);
 });
 
 document.getElementById('addForm').addEventListener('submit', addData);
@@ -337,3 +354,5 @@ document.getElementById('pngBtn').addEventListener('click', downloadPng);
 document.getElementById('colorInput').value = nextDefaultColor();
 
 render();
+// The web font may arrive after the first draw; redraw so the chart picks it up.
+document.fonts.ready.then(renderChart);
