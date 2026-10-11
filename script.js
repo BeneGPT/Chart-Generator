@@ -15,7 +15,9 @@ const settings = {
     title: '',
     unit: '',
     xAxis: '',
-    yAxis: ''
+    yAxis: '',
+    source: '',
+    sourceUrl: ''
 };
 
 let myChart = null;
@@ -29,6 +31,51 @@ const hasAxes = () => settings.type === 'bar' || settings.type === 'line';
 
 function withUnit(value) {
     return settings.unit ? `${value} ${settings.unit}` : `${value}`;
+}
+
+// Turns what the user typed into a safe http(s) link, or '' if it isn't one.
+function normalizeUrl(raw) {
+    const value = raw.trim();
+    if (!value) {
+        return '';
+    }
+    try {
+        const url = new URL(/^[a-z][a-z\d+.-]*:/i.test(value) ? value : `https://${value}`);
+        return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '';
+    } catch (error) {
+        return '';
+    }
+}
+
+function sourceText() {
+    const label = settings.source.trim();
+    const url = normalizeUrl(settings.sourceUrl);
+    if (!label && !url) {
+        return '';
+    }
+    return label || url;
+}
+
+function renderSource() {
+    const el = document.getElementById('sourceLine');
+    const text = sourceText();
+    const url = normalizeUrl(settings.sourceUrl);
+    el.textContent = '';
+    el.hidden = !text;
+    if (!text) {
+        return;
+    }
+    el.append('Source: ');
+    if (url) {
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.textContent = text;
+        el.append(link);
+    } else {
+        el.append(text);
+    }
 }
 
 function hexToRgba(hex, alpha) {
@@ -206,8 +253,6 @@ function addData(event) {
         dataInput.value = '';
         colorInput.value = nextDefaultColor();
         render();
-// The web font may arrive after the first draw; redraw so the chart picks it up.
-document.fonts.ready.then(renderChart);
         labelInput.focus();
     }
 }
@@ -216,8 +261,6 @@ function removeData(index) {
     if (index < entries.length) {
         entries.splice(index, 1);
         render();
-// The web font may arrive after the first draw; redraw so the chart picks it up.
-document.fonts.ready.then(renderChart);
     }
 }
 
@@ -265,7 +308,7 @@ function downloadPptx() {
         x: 0.5,
         y: 0.4,
         w: 12.33,
-        h: 6.7,
+        h: sourceText() ? 6.2 : 6.7,
         chartColors: settings.type === 'line' || settings.type === 'radar' ? [colors[0]] : colors,
         showTitle: Boolean(settings.title),
         title: settings.title,
@@ -302,6 +345,22 @@ function downloadPptx() {
     }
 
     slide.addChart(typeMap[settings.type], data, options);
+
+    if (sourceText()) {
+        const url = normalizeUrl(settings.sourceUrl);
+        slide.addText([
+            { text: 'Source: ' },
+            { text: sourceText(), options: url ? { hyperlink: { url: url } } : {} }
+        ], {
+            x: 0.5,
+            y: 6.75,
+            w: 12.33,
+            h: 0.4,
+            fontFace: FONT,
+            fontSize: 11,
+            color: '595959'
+        });
+    }
     pptx.writeFile({ fileName: fileName('pptx') });
 }
 
@@ -312,13 +371,27 @@ function downloadPng() {
     myChart.resize();
     myChart.update('none');
 
+    const scale = 3;
+    const source = sourceText();
+    const url = normalizeUrl(settings.sourceUrl);
+    // The source line names the URL too, since a link in an image can't be clicked.
+    const sourceLine = source ? `Source: ${source}${url && url !== source ? ` (${url})` : ''}` : '';
+    const footer = sourceLine ? 36 * scale : 0;
+
     const canvas = document.createElement('canvas');
     canvas.width = myChart.canvas.width;
-    canvas.height = myChart.canvas.height;
+    canvas.height = myChart.canvas.height + footer;
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(myChart.canvas, 0, 0);
+
+    if (sourceLine) {
+        ctx.fillStyle = '#595959';
+        ctx.font = `${12 * scale}px '${FONT}', sans-serif`;
+        ctx.textBaseline = 'middle';
+        ctx.fillText(sourceLine, 12 * scale, myChart.canvas.height + footer / 2, canvas.width - 24 * scale);
+    }
 
     myChart.options.devicePixelRatio = originalRatio;
     myChart.resize();
@@ -342,11 +415,16 @@ bindSetting('unitInput', 'unit');
 bindSetting('xAxisInput', 'xAxis');
 bindSetting('yAxisInput', 'yAxis');
 
+['sourceInput', 'sourceUrlInput'].forEach((id) => {
+    document.getElementById(id).addEventListener('input', (event) => {
+        settings[id === 'sourceInput' ? 'source' : 'sourceUrl'] = event.target.value;
+        renderSource();
+    });
+});
+
 document.getElementById('chartType').addEventListener('change', (event) => {
     settings.type = event.target.value;
     render();
-// The web font may arrive after the first draw; redraw so the chart picks it up.
-document.fonts.ready.then(renderChart);
 });
 
 document.getElementById('addForm').addEventListener('submit', addData);
