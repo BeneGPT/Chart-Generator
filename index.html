@@ -10,29 +10,73 @@
 
 <body>
 
-    <div class="container">
-        <div class="chart-container">
-            <div id="canvas-container"></div>
-        </div>
+    <div class="app">
+        <aside class="sidebar">
+            <h1 class="app-title">Chart Generator</h1>
 
-        <div class="controls">
-            <select id="chartType" class="select">
-                <option value="bar">Bar</option>
-                <option value="line">Line</option>
-                <option value="pie">Pie</option>
-                <option value="doughnut">Doughnut</option>
-                <option value="radar">Radar</option>
-            </select>
-            <input type="text" id="labelInput" class="input" placeholder="Label">
-            <input type="number" id="dataInput" class="input" placeholder="Data">
-            <button onclick="addData()" class="btn">Add Data</button>
-            <button onclick="updateChartType()" class="btn">Change Chart Type</button>
-        </div>
+            <section class="panel">
+                <h2>Chart</h2>
+                <label class="field">
+                    <span>Chart type</span>
+                    <select id="chartType" class="select">
+                        <option value="bar">Bar</option>
+                        <option value="line">Line</option>
+                        <option value="pie">Pie</option>
+                        <option value="doughnut">Doughnut</option>
+                        <option value="radar">Radar</option>
+                    </select>
+                </label>
+                <label class="field">
+                    <span>Title</span>
+                    <input type="text" id="titleInput" class="input" placeholder="e.g. Revenue 2026">
+                </label>
+                <label class="field">
+                    <span>Unit</span>
+                    <input type="text" id="unitInput" class="input" placeholder="e.g. €, kg, %">
+                </label>
+                <label class="field axis-field">
+                    <span>X-axis label</span>
+                    <input type="text" id="xAxisInput" class="input" placeholder="e.g. Month">
+                </label>
+                <label class="field axis-field">
+                    <span>Y-axis label</span>
+                    <input type="text" id="yAxisInput" class="input" placeholder="e.g. Revenue">
+                </label>
+            </section>
 
+            <section class="panel">
+                <h2>Add data</h2>
+                <form id="addForm" class="add-row">
+                    <input type="text" id="labelInput" class="input" placeholder="Label">
+                    <input type="number" step="any" id="dataInput" class="input" placeholder="Value">
+                    <input type="color" id="colorInput" class="color" title="Color">
+                    <button type="submit" class="btn">Add</button>
+                </form>
+            </section>
+
+            <section class="panel">
+                <h2>Data</h2>
+                <ul id="dataList" class="data-list"></ul>
+                <p id="emptyHint" class="hint">No data yet. Add a label and a value above.</p>
+            </section>
+
+            <section class="panel">
+                <h2>Download</h2>
+                <button id="pptxBtn" class="btn btn-wide">PowerPoint (.pptx)</button>
+                <button id="pngBtn" class="btn btn-wide btn-secondary">Image (.png)</button>
+            </section>
+        </aside>
+
+        <main class="chart-area">
+            <div id="canvas-container">
+                <canvas id="myChart"></canvas>
+            </div>
+        </main>
     </div>
 
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <script src="script.js"></script>
 </body>
 
