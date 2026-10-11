@@ -22,7 +22,8 @@ let myChart = null;
 
 const FONT = 'Inter';
 Chart.defaults.font.family = `'${FONT}', sans-serif`;
-Chart.defaults.color = '#333';
+Chart.defaults.color = '#1d1d1f';
+Chart.defaults.borderColor = 'rgba(29, 29, 31, 0.1)';
 
 const hasAxes = () => settings.type === 'bar' || settings.type === 'line';
 
