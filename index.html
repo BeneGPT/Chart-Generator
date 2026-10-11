@@ -49,6 +49,18 @@
             </section>
 
             <section class="panel">
+                <h2>Source</h2>
+                <label class="field">
+                    <span>Source name</span>
+                    <input type="text" id="sourceInput" class="input" placeholder="e.g. Statistisches Bundesamt">
+                </label>
+                <label class="field">
+                    <span>Link (optional)</span>
+                    <input type="url" id="sourceUrlInput" class="input" placeholder="e.g. destatis.de">
+                </label>
+            </section>
+
+            <section class="panel">
                 <h2>Add data</h2>
                 <form id="addForm" class="add-row">
                     <input type="text" id="labelInput" class="input" placeholder="Label">
@@ -73,7 +85,10 @@
 
         <main class="chart-area">
             <div id="canvas-container" class="glass">
-                <canvas id="myChart"></canvas>
+                <div class="chart-box">
+                    <canvas id="myChart"></canvas>
+                </div>
+                <p id="sourceLine" class="source-line" hidden></p>
             </div>
         </main>
     </div>
