@@ -58,6 +58,9 @@ function sourceText() {
 
 function renderSource() {
     const el = document.getElementById('sourceLine');
+    if (!el) {
+        return;
+    }
     const text = sourceText();
     const url = normalizeUrl(settings.sourceUrl);
     el.textContent = '';
@@ -403,33 +406,37 @@ function downloadPng() {
     link.click();
 }
 
-function bindSetting(id, key) {
-    document.getElementById(id).addEventListener('input', (event) => {
+// Binds a handler only if the element exists. If the browser still has an older index.html
+// cached next to a newer script, a missing field must not stop the rest of the app from working.
+function on(id, type, handler) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener(type, handler);
+    }
+}
+
+function bindSetting(id, key, afterChange) {
+    on(id, 'input', (event) => {
         settings[key] = event.target.value;
-        renderChart();
+        afterChange();
     });
 }
 
-bindSetting('titleInput', 'title');
-bindSetting('unitInput', 'unit');
-bindSetting('xAxisInput', 'xAxis');
-bindSetting('yAxisInput', 'yAxis');
+bindSetting('titleInput', 'title', renderChart);
+bindSetting('unitInput', 'unit', renderChart);
+bindSetting('xAxisInput', 'xAxis', renderChart);
+bindSetting('yAxisInput', 'yAxis', renderChart);
+bindSetting('sourceInput', 'source', renderSource);
+bindSetting('sourceUrlInput', 'sourceUrl', renderSource);
 
-['sourceInput', 'sourceUrlInput'].forEach((id) => {
-    document.getElementById(id).addEventListener('input', (event) => {
-        settings[id === 'sourceInput' ? 'source' : 'sourceUrl'] = event.target.value;
-        renderSource();
-    });
-});
-
-document.getElementById('chartType').addEventListener('change', (event) => {
+on('chartType', 'change', (event) => {
     settings.type = event.target.value;
     render();
 });
 
-document.getElementById('addForm').addEventListener('submit', addData);
-document.getElementById('pptxBtn').addEventListener('click', downloadPptx);
-document.getElementById('pngBtn').addEventListener('click', downloadPng);
+on('addForm', 'submit', addData);
+on('pptxBtn', 'click', downloadPptx);
+on('pngBtn', 'click', downloadPng);
 document.getElementById('colorInput').value = nextDefaultColor();
 
 render();
