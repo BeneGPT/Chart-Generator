@@ -1,5 +1,112 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* Colors for the light look. The dark look below swaps these out. */
+:root{
+    color-scheme: light;
+    --text: #1d1d1f;
+    --text-muted: rgba(29, 29, 31, 0.6);
+    --text-soft: rgba(29, 29, 31, 0.55);
+    --page-bg: #c9d6ff;
+    --backdrop:
+        radial-gradient(at 12% 18%, #ff9ac1 0, transparent 45%),
+        radial-gradient(at 88% 12%, #7ad7f0 0, transparent 45%),
+        radial-gradient(at 78% 88%, #b69cff 0, transparent 50%),
+        radial-gradient(at 18% 92%, #ffd27a 0, transparent 45%),
+        linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+    --glass-bg: rgba(255, 255, 255, 0.28);
+    --glass-border: rgba(255, 255, 255, 0.55);
+    --glass-highlight: rgba(255, 255, 255, 0.8);
+    --glass-lowlight: rgba(255, 255, 255, 0.2);
+    --glass-shadow: rgba(40, 30, 90, 0.18);
+    --chart-panel-bg: rgba(255, 255, 255, 0.5);
+    --field-bg: rgba(255, 255, 255, 0.45);
+    --field-bg-hover: rgba(255, 255, 255, 0.6);
+    --field-bg-focus: rgba(255, 255, 255, 0.75);
+    --field-border: rgba(255, 255, 255, 0.6);
+    --field-border-focus: rgba(255, 255, 255, 0.95);
+    --field-inset: rgba(40, 30, 90, 0.08);
+    --placeholder: rgba(29, 29, 31, 0.45);
+    --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    --link: #0066d6;
+    --secondary-bg: rgba(255, 255, 255, 0.45);
+    --secondary-bg-hover: rgba(255, 255, 255, 0.65);
+    --secondary-border: rgba(255, 255, 255, 0.7);
+    --secondary-shadow: rgba(40, 30, 90, 0.1);
+    --switch-active: rgba(255, 255, 255, 0.85);
+}
+
+/* Dark look: deep backdrop with soft color glows and smoky glass. */
+@media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+        color-scheme: dark;
+        --text: #f5f5f7;
+        --text-muted: rgba(245, 245, 247, 0.6);
+        --text-soft: rgba(245, 245, 247, 0.55);
+        --page-bg: #0d0b1a;
+        --backdrop:
+            radial-gradient(at 12% 18%, rgba(255, 79, 154, 0.45) 0, transparent 45%),
+            radial-gradient(at 88% 12%, rgba(40, 170, 220, 0.4) 0, transparent 45%),
+            radial-gradient(at 78% 88%, rgba(130, 90, 255, 0.45) 0, transparent 50%),
+            radial-gradient(at 18% 92%, rgba(255, 170, 60, 0.3) 0, transparent 45%),
+            linear-gradient(135deg, #1a1033 0%, #0b1a33 100%);
+        --glass-bg: rgba(30, 28, 48, 0.4);
+        --glass-border: rgba(255, 255, 255, 0.12);
+        --glass-highlight: rgba(255, 255, 255, 0.18);
+        --glass-lowlight: rgba(255, 255, 255, 0.04);
+        --glass-shadow: rgba(0, 0, 0, 0.45);
+        --chart-panel-bg: rgba(22, 20, 36, 0.6);
+        --field-bg: rgba(255, 255, 255, 0.07);
+        --field-bg-hover: rgba(255, 255, 255, 0.11);
+        --field-bg-focus: rgba(255, 255, 255, 0.14);
+        --field-border: rgba(255, 255, 255, 0.12);
+        --field-border-focus: rgba(255, 255, 255, 0.3);
+        --field-inset: rgba(0, 0, 0, 0.25);
+        --placeholder: rgba(245, 245, 247, 0.4);
+        --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23f5f5f7' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        --link: #5eb0ff;
+        --secondary-bg: rgba(255, 255, 255, 0.08);
+        --secondary-bg-hover: rgba(255, 255, 255, 0.14);
+        --secondary-border: rgba(255, 255, 255, 0.16);
+        --secondary-shadow: rgba(0, 0, 0, 0.3);
+        --switch-active: rgba(255, 255, 255, 0.18);
+    }
+}
+
+/* Same dark values when picked by hand with the switch. */
+:root[data-theme="dark"]{
+    color-scheme: dark;
+    --text: #f5f5f7;
+    --text-muted: rgba(245, 245, 247, 0.6);
+    --text-soft: rgba(245, 245, 247, 0.55);
+    --page-bg: #0d0b1a;
+    --backdrop:
+        radial-gradient(at 12% 18%, rgba(255, 79, 154, 0.45) 0, transparent 45%),
+        radial-gradient(at 88% 12%, rgba(40, 170, 220, 0.4) 0, transparent 45%),
+        radial-gradient(at 78% 88%, rgba(130, 90, 255, 0.45) 0, transparent 50%),
+        radial-gradient(at 18% 92%, rgba(255, 170, 60, 0.3) 0, transparent 45%),
+        linear-gradient(135deg, #1a1033 0%, #0b1a33 100%);
+    --glass-bg: rgba(30, 28, 48, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-highlight: rgba(255, 255, 255, 0.18);
+    --glass-lowlight: rgba(255, 255, 255, 0.04);
+    --glass-shadow: rgba(0, 0, 0, 0.45);
+    --chart-panel-bg: rgba(22, 20, 36, 0.6);
+    --field-bg: rgba(255, 255, 255, 0.07);
+    --field-bg-hover: rgba(255, 255, 255, 0.11);
+    --field-bg-focus: rgba(255, 255, 255, 0.14);
+    --field-border: rgba(255, 255, 255, 0.12);
+    --field-border-focus: rgba(255, 255, 255, 0.3);
+    --field-inset: rgba(0, 0, 0, 0.25);
+    --placeholder: rgba(245, 245, 247, 0.4);
+    --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23f5f5f7' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    --link: #5eb0ff;
+    --secondary-bg: rgba(255, 255, 255, 0.08);
+    --secondary-bg-hover: rgba(255, 255, 255, 0.14);
+    --secondary-border: rgba(255, 255, 255, 0.16);
+    --secondary-shadow: rgba(0, 0, 0, 0.3);
+    --switch-active: rgba(255, 255, 255, 0.18);
+}
+
 *{
     margin: 0;
     padding: 0;
@@ -10,8 +117,8 @@
 
 html,
 body{
-    color: #1d1d1f;
-    background-color: #c9d6ff;
+    color: var(--text);
+    background-color: var(--page-bg);
 }
 
 /* Colorful backdrop on its own fixed layer, so it stays put while the page scrolls (also on phones). */
@@ -20,24 +127,19 @@ body::before{
     position: fixed;
     inset: 0;
     z-index: 0;
-    background-image:
-        radial-gradient(at 12% 18%, #ff9ac1 0, transparent 45%),
-        radial-gradient(at 88% 12%, #7ad7f0 0, transparent 45%),
-        radial-gradient(at 78% 88%, #b69cff 0, transparent 50%),
-        radial-gradient(at 18% 92%, #ffd27a 0, transparent 45%),
-        linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+    background-image: var(--backdrop);
 }
 
 /* Liquid Glass: translucent, blurred surfaces with a bright rim and soft depth. */
 .glass{
-    background: rgba(255, 255, 255, 0.28);
+    background: var(--glass-bg);
     -webkit-backdrop-filter: blur(28px) saturate(180%);
     backdrop-filter: blur(28px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.55);
+    border: 1px solid var(--glass-border);
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.8),
-        inset 0 -1px 0 rgba(255, 255, 255, 0.2),
-        0 20px 50px rgba(40, 30, 90, 0.18);
+        inset 0 1px 0 var(--glass-highlight),
+        inset 0 -1px 0 var(--glass-lowlight),
+        0 20px 50px var(--glass-shadow);
 }
 
 .app{
@@ -56,11 +158,55 @@ body::before{
     border-radius: 28px;
 }
 
+.sidebar-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
 .app-title{
     font-size: 24px;
     font-weight: 700;
     letter-spacing: -0.02em;
-    margin-bottom: 20px;
+}
+
+.theme-switch{
+    display: flex;
+    flex-shrink: 0;
+    padding: 3px;
+    border: 1px solid var(--field-border);
+    border-radius: 999px;
+    background: var(--field-bg);
+}
+
+.theme-switch button{
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.theme-switch button:hover{
+    color: var(--text);
+}
+
+.theme-switch button[aria-pressed="true"]{
+    background: var(--switch-active);
+    color: var(--text);
+    box-shadow: 0 1px 4px var(--secondary-shadow);
+}
+
+.theme-switch svg{
+    width: 16px;
+    height: 16px;
 }
 
 .panel{
@@ -72,7 +218,7 @@ body::before{
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: rgba(29, 29, 31, 0.6);
+    color: var(--text-muted);
     margin-bottom: 10px;
 }
 
@@ -96,24 +242,24 @@ body::before{
 .input{
     width: 100%;
     padding: 9px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    border: 1px solid var(--field-border);
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.45);
+    background: var(--field-bg);
     color: inherit;
     font-size: 14px;
-    box-shadow: inset 0 1px 2px rgba(40, 30, 90, 0.08);
+    box-shadow: inset 0 1px 2px var(--field-inset);
     transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .input::placeholder{
-    color: rgba(29, 29, 31, 0.45);
+    color: var(--placeholder);
 }
 
 .select{
     appearance: none;
     -webkit-appearance: none;
     padding-right: 34px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-image: var(--chevron);
     background-repeat: no-repeat;
     background-position: right 12px center;
     cursor: pointer;
@@ -121,13 +267,13 @@ body::before{
 
 .select:hover,
 .input:hover{
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: var(--field-bg-hover);
 }
 
 .select:focus,
 .input:focus{
-    background-color: rgba(255, 255, 255, 0.75);
-    border-color: rgba(255, 255, 255, 0.95);
+    background-color: var(--field-bg-focus);
+    border-color: var(--field-border-focus);
     box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.25);
 }
 
@@ -135,9 +281,9 @@ body::before{
     width: 38px;
     height: 38px;
     padding: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    border: 1px solid var(--field-border);
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.45);
+    background: var(--field-bg);
     cursor: pointer;
     flex-shrink: 0;
 }
@@ -198,19 +344,19 @@ body::before{
 }
 
 .btn-secondary{
-    background: rgba(255, 255, 255, 0.45);
-    color: #0066d6;
-    border-color: rgba(255, 255, 255, 0.7);
+    background: var(--secondary-bg);
+    color: var(--link);
+    border-color: var(--secondary-border);
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.8),
-        0 4px 12px rgba(40, 30, 90, 0.1);
+        inset 0 1px 0 var(--glass-highlight),
+        0 4px 12px var(--secondary-shadow);
 }
 
 .btn-secondary:hover{
-    background: rgba(255, 255, 255, 0.65);
+    background: var(--secondary-bg-hover);
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.8),
-        0 6px 16px rgba(40, 30, 90, 0.14);
+        inset 0 1px 0 var(--glass-highlight),
+        0 6px 16px var(--secondary-shadow);
 }
 
 .data-list{
@@ -240,7 +386,7 @@ body::before{
     border: none;
     border-radius: 50%;
     background: transparent;
-    color: rgba(29, 29, 31, 0.5);
+    color: var(--text-soft);
     font-size: 18px;
     line-height: 1;
     cursor: pointer;
@@ -254,7 +400,7 @@ body::before{
 
 .hint{
     font-size: 13px;
-    color: rgba(29, 29, 31, 0.55);
+    color: var(--text-soft);
 }
 
 .chart-area{
@@ -269,7 +415,7 @@ body::before{
     border-radius: 28px;
     padding: 24px;
     /* A little more opaque than the sidebar so the chart stays easy to read. */
-    background: rgba(255, 255, 255, 0.5);
+    background: var(--chart-panel-bg);
     display: flex;
     flex-direction: column;
 }
@@ -283,11 +429,11 @@ body::before{
 .source-line{
     margin-top: 8px;
     font-size: 12px;
-    color: rgba(29, 29, 31, 0.65);
+    color: var(--text-muted);
 }
 
 .source-line a{
-    color: #0066d6;
+    color: var(--link);
 }
 
 @media (max-width: 800px){

@@ -4,12 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <script>
+        // Apply a remembered light/dark choice before the page paints, so it doesn't flash.
+        try {
+            const theme = localStorage.getItem('chart-generator-theme');
+            if (theme === 'light' || theme === 'dark') {
+                document.documentElement.dataset.theme = theme;
+            }
+        } catch (error) {}
+    </script>
     <link rel="icon" href="favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <!-- Bump ?v= whenever style.css or script.js change, so browsers don't mix a new page with old cached files. -->
-    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="style.css?v=8">
     <title>Chart Generator</title>
 </head>
 
@@ -17,7 +27,20 @@
 
     <div class="app">
         <aside class="sidebar glass">
-            <h1 class="app-title">Chart Generator</h1>
+            <div class="sidebar-header">
+                <h1 class="app-title">Chart Generator</h1>
+                <div class="theme-switch" role="group" aria-label="Appearance">
+                    <button type="button" data-theme-choice="system" title="Follow system" aria-label="Follow system">
+                        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 3.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg>
+                    </button>
+                    <button type="button" data-theme-choice="light" title="Light" aria-label="Light">
+                        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.6" fill="currentColor"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M10 1.8v2.2M10 16v2.2M1.8 10H4M16 10h2.2M4.2 4.2l1.6 1.6M14.2 14.2l1.6 1.6M4.2 15.8l1.6-1.6M14.2 5.8l1.6-1.6"/></g></svg>
+                    </button>
+                    <button type="button" data-theme-choice="dark" title="Dark" aria-label="Dark">
+                        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 12.6A7 7 0 0 1 7.4 3.5a7 7 0 1 0 9.1 9.1z" fill="currentColor"/></svg>
+                    </button>
+                </div>
+            </div>
 
             <section class="panel">
                 <h2>Chart</h2>
@@ -97,7 +120,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-    <script src="script.js?v=7"></script>
+    <script src="script.js?v=8"></script>
 </body>
 
 </html>

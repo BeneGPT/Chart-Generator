@@ -24,8 +24,56 @@ let myChart = null;
 
 const FONT = 'Inter';
 Chart.defaults.font.family = `'${FONT}', sans-serif`;
-Chart.defaults.color = '#1d1d1f';
-Chart.defaults.borderColor = 'rgba(29, 29, 31, 0.1)';
+
+// Text and grid colors for the chart. Exports always use the light set, since they have a white background.
+const CHART_THEMES = {
+    light: { text: '#1d1d1f', grid: 'rgba(29, 29, 31, 0.1)' },
+    dark: { text: '#f5f5f7', grid: 'rgba(245, 245, 247, 0.14)' }
+};
+
+const THEME_KEY = 'chart-generator-theme';
+const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+// 'system', 'light' or 'dark'. Only an explicit choice is remembered.
+function storedTheme() {
+    try {
+        const value = localStorage.getItem(THEME_KEY);
+        return value === 'light' || value === 'dark' ? value : 'system';
+    } catch (error) {
+        return 'system';
+    }
+}
+
+function activeTheme() {
+    const choice = storedTheme();
+    if (choice !== 'system') {
+        return choice;
+    }
+    return systemDark.matches ? 'dark' : 'light';
+}
+
+function applyTheme(choice) {
+    try {
+        if (choice === 'system') {
+            localStorage.removeItem(THEME_KEY);
+        } else {
+            localStorage.setItem(THEME_KEY, choice);
+        }
+    } catch (error) {
+        // Storage can be blocked (private mode); the choice then lasts until reload.
+    }
+    if (choice === 'system') {
+        delete document.documentElement.dataset.theme;
+    } else {
+        document.documentElement.dataset.theme = choice;
+    }
+    document.querySelectorAll('[data-theme-choice]').forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.themeChoice === choice));
+    });
+    if (myChart) {
+        renderChart();
+    }
+}
 
 const hasAxes = () => settings.type === 'bar' || settings.type === 'line';
 
@@ -106,18 +154,22 @@ function buildDataset() {
     };
 }
 
-function buildOptions() {
+function buildOptions(palette = CHART_THEMES[activeTheme()]) {
     const options = {
         responsive: true,
         maintainAspectRatio: false,
+        color: palette.text,
+        borderColor: palette.grid,
         plugins: {
             title: {
                 display: Boolean(settings.title),
                 text: settings.title,
+                color: palette.text,
                 font: { size: 20, weight: '600' }
             },
             legend: {
-                display: settings.type === 'pie' || settings.type === 'doughnut'
+                display: settings.type === 'pie' || settings.type === 'doughnut',
+                labels: { color: palette.text }
             },
             tooltip: {
                 callbacks: {
@@ -139,19 +191,27 @@ function buildOptions() {
     if (hasAxes()) {
         options.scales = {
             x: {
-                title: { display: Boolean(settings.xAxis), text: settings.xAxis, font: { size: 14 } }
+                title: { display: Boolean(settings.xAxis), text: settings.xAxis, color: palette.text, font: { size: 14 } },
+                ticks: { color: palette.text },
+                grid: { color: palette.grid },
+                border: { color: palette.grid }
             },
             y: {
                 beginAtZero: true,
-                title: { display: Boolean(settings.yAxis), text: settings.yAxis, font: { size: 14 } },
-                ticks: { callback: (value) => withUnit(value) }
+                title: { display: Boolean(settings.yAxis), text: settings.yAxis, color: palette.text, font: { size: 14 } },
+                ticks: { color: palette.text, callback: (value) => withUnit(value) },
+                grid: { color: palette.grid },
+                border: { color: palette.grid }
             }
         };
     } else if (settings.type === 'radar') {
         options.scales = {
             r: {
                 beginAtZero: true,
-                ticks: { callback: (value) => withUnit(value) }
+                ticks: { color: palette.text, backdropColor: 'transparent', callback: (value) => withUnit(value) },
+                grid: { color: palette.grid },
+                angleLines: { color: palette.grid },
+                pointLabels: { color: palette.text }
             }
         };
     }
@@ -368,9 +428,11 @@ function downloadPptx() {
 }
 
 function downloadPng() {
-    // Re-render at 3x pixel density so the image stays sharp when enlarged on a slide.
-    const originalRatio = myChart.options.devicePixelRatio;
-    myChart.options.devicePixelRatio = 3;
+    // Re-render at 3x pixel density, with light-theme colors for the white background,
+    // so the image stays sharp and readable when placed on a slide.
+    // New options only take effect on update, so update before resizing to the new pixel ratio.
+    myChart.options = { ...buildOptions(CHART_THEMES.light), devicePixelRatio: 3 };
+    myChart.update('none');
     myChart.resize();
     myChart.update('none');
 
@@ -396,7 +458,8 @@ function downloadPng() {
         ctx.fillText(sourceLine, 12 * scale, myChart.canvas.height + footer / 2, canvas.width - 24 * scale);
     }
 
-    myChart.options.devicePixelRatio = originalRatio;
+    myChart.options = buildOptions();
+    myChart.update('none');
     myChart.resize();
     myChart.update('none');
 
@@ -434,11 +497,22 @@ on('chartType', 'change', (event) => {
     render();
 });
 
+document.querySelectorAll('[data-theme-choice]').forEach((button) => {
+    button.addEventListener('click', () => applyTheme(button.dataset.themeChoice));
+});
+// Follow the system setting live while the user hasn't picked light or dark.
+systemDark.addEventListener('change', () => {
+    if (storedTheme() === 'system' && myChart) {
+        renderChart();
+    }
+});
+
 on('addForm', 'submit', addData);
 on('pptxBtn', 'click', downloadPptx);
 on('pngBtn', 'click', downloadPng);
 document.getElementById('colorInput').value = nextDefaultColor();
 
+applyTheme(storedTheme());
 render();
 // The web font may arrive after the first draw; redraw so the chart picks it up.
 document.fonts.ready.then(renderChart);
