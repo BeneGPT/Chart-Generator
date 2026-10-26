@@ -427,46 +427,102 @@ function downloadPptx() {
     pptx.writeFile({ fileName: fileName('pptx') });
 }
 
-function downloadPng() {
-    // Re-render at 3x pixel density, with light-theme colors for the white background,
-    // so the image stays sharp and readable when placed on a slide.
-    // New options only take effect on update, so update before resizing to the new pixel ratio.
-    myChart.options = { ...buildOptions(CHART_THEMES.light), devicePixelRatio: 3 };
-    myChart.update('none');
-    myChart.resize();
-    myChart.update('none');
+// PNG export size: a 16:9 slide-sized image (1200 x 675 layout, drawn at 2x = 2400 x 1350 pixels).
+// A fixed size keeps the file the same on every screen and well below the canvas limits of
+// Safari on Mac, iPhone and iPad, which silently fail on very large canvases.
+const EXPORT_WIDTH = 1200;
+const EXPORT_HEIGHT = 675;
+const EXPORT_SCALE = 2;
 
-    const scale = 3;
+// Draws a separate, off-screen copy of the chart with light colors on white,
+// so the chart on the page is never resized or redrawn by an export.
+function renderExportCanvas() {
     const source = sourceText();
     const url = normalizeUrl(settings.sourceUrl);
     // The source line names the URL too, since a link in an image can't be clicked.
     const sourceLine = source ? `Source: ${source}${url && url !== source ? ` (${url})` : ''}` : '';
-    const footer = sourceLine ? 36 * scale : 0;
+    const footer = sourceLine ? 36 : 0;
+
+    const holder = document.createElement('div');
+    holder.style.cssText = 'position: fixed; left: -10000px; top: 0;';
+    const chartCanvas = document.createElement('canvas');
+    chartCanvas.width = EXPORT_WIDTH;
+    chartCanvas.height = EXPORT_HEIGHT - footer;
+    holder.append(chartCanvas);
+    document.body.append(holder);
+
+    const exportChart = new Chart(chartCanvas, {
+        type: settings.type,
+        data: {
+            labels: entries.map((e) => e.label),
+            datasets: [buildDataset()]
+        },
+        options: {
+            ...buildOptions(CHART_THEMES.light),
+            responsive: false,
+            animation: false,
+            events: [],
+            devicePixelRatio: EXPORT_SCALE,
+            layout: { padding: 24 }
+        }
+    });
 
     const canvas = document.createElement('canvas');
-    canvas.width = myChart.canvas.width;
-    canvas.height = myChart.canvas.height + footer;
+    canvas.width = EXPORT_WIDTH * EXPORT_SCALE;
+    canvas.height = EXPORT_HEIGHT * EXPORT_SCALE;
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(myChart.canvas, 0, 0);
+    ctx.drawImage(exportChart.canvas, 0, 0);
 
     if (sourceLine) {
         ctx.fillStyle = '#595959';
-        ctx.font = `${12 * scale}px '${FONT}', sans-serif`;
+        ctx.font = `${14 * EXPORT_SCALE}px '${FONT}', sans-serif`;
         ctx.textBaseline = 'middle';
-        ctx.fillText(sourceLine, 12 * scale, myChart.canvas.height + footer / 2, canvas.width - 24 * scale);
+        ctx.fillText(sourceLine, 24 * EXPORT_SCALE, (EXPORT_HEIGHT - footer / 2) * EXPORT_SCALE, (EXPORT_WIDTH - 48) * EXPORT_SCALE);
     }
 
-    myChart.options = buildOptions();
-    myChart.update('none');
-    myChart.resize();
-    myChart.update('none');
+    exportChart.destroy();
+    holder.remove();
+    return canvas;
+}
 
+// Saves a blob as a file. The link is added to the page while it is clicked and the
+// object URL is kept alive for a while, because Safari starts the download asynchronously.
+function saveBlob(blob, name) {
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.download = fileName('png');
-    link.href = canvas.toDataURL('image/png');
+    link.href = url;
+    link.download = name;
+    link.rel = 'noopener';
+    link.style.display = 'none';
+    document.body.append(link);
     link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+function downloadPng() {
+    if (!entries.length) {
+        alert('Add some data first.');
+        return;
+    }
+
+    let canvas;
+    try {
+        canvas = renderExportCanvas();
+    } catch (error) {
+        alert('The image could not be created. Please try again.');
+        return;
+    }
+
+    canvas.toBlob((blob) => {
+        if (!blob) {
+            alert('The image could not be created. Please try again.');
+            return;
+        }
+        saveBlob(blob, fileName('png'));
+    }, 'image/png');
 }
 
 // Binds a handler only if the element exists. If the browser still has an older index.html
